@@ -2,7 +2,6 @@
 #include <iostream>
 using namespace std;
 
-
 void enqueue(Node* &headQueue, Node* & tailQueue, Node* token);
 void dequeue(Node* &headQueue);
 void push(Node* &tailStack, int operation);
@@ -14,9 +13,7 @@ int main() {
   cout << "Enter equation: ";
   cin >> input;
 
-  //operators
   Node* tailStack = NULL;
-  //numbers
   Node* headQueue = NULL;
   Node* tailQueue = NULL;
   int i = 0;
@@ -26,46 +23,62 @@ int main() {
       enqueue(headQueue, tailQueue, token);//
     }
     else if (token->num == 41) {//right parenthesis
-
+      while(tailStack->num != 40) {
+        cout << tailStack->num << endl;
+        if (tailStack->next == NULL) {
+        }
+        cout << tailStack->next->num << endl;
+        enqueue(headQueue, tailQueue, pop(tailStack));
+        cout << tailStack->num << endl;
+        if (tailStack == NULL) {
+          break;
+        }
+      }
+      pop(tailStack);//pop left parenthesis
     }
+
     else if (token->num == 40) {//left parenthesis: stack
       push(tailStack, int(input[i]));
     }
     else if (token->num == 43 || token->num == 42 || token->num == 45 || token->num == 47 || token->num == 94) {//operator
-      while ((tailStack != NULL) && (prescedence(tailQueue->num) >= prescedence(token->num))) {
-        cout << "a" << endl;
-        
-        
+      while ((tailStack != NULL) && (prescedence(tailStack->num) >= prescedence(token->num))) {
         enqueue(headQueue, tailQueue, pop(tailStack));
       }
-      cout << "b" << endl;
       push(tailStack, token->num);
-      cout << "c" << endl;
     }
     ++i;
   }
   //now that there are no more tokens to go through, pop remaining operators off stack and shift them to queue
   while(tailStack != NULL) {
-    cout << "d" << endl;
-    enqueue(headQueue, tailQueue, pop(tailStack));
+    enqueue(headQueue, tailQueue, pop(tailStack));//
   }
   Node* nQueue = headQueue;
+  cout << "Shunting yard output: ";
   while (nQueue != NULL) {
-    cout << "e" << endl;
-    cout << nQueue->num << endl;
-    cout << char(nQueue->num) << endl;
+    cout << char(nQueue->num);
     nQueue = nQueue->next;
   }
+  cout << endl;
+  bool cont = true;
+  while (cont == true) {
+    cout << "Infix, prefix, or postfix notation (infix, prefix, postfix)?: ";
+    cin
+  }
+  //binary tree
+
 }
 
 int prescedence(int op) {
   if (op == 94) {//^
-    return 2;
+    return 3;
   }
   else if (op == 47 || op == 42) {//*/
+    return 2;
+  }
+  else if (op == 43 || op == 45) {//+-
     return 1;
   }
-  else {//+-
+  else {//(
     return 0;
   }
 }
@@ -110,10 +123,13 @@ void push(Node* &tailStack, int operation) {
 
 Node* pop(Node* &tailStack) {//remove tail of stack
   if (tailStack->next == NULL) {
+    Node* returnvalue = tailStack;
     tailStack = NULL;
+    return returnvalue;
   }
   Node* temp = tailStack->next;
   Node* move = tailStack;
+  move->next = NULL;
   tailStack = temp;
   return move;
 }
