@@ -1,12 +1,26 @@
 #include "node.h"
 #include <iostream>
+#include <string.h>
+#include <cstring>
+#include <vector>
 using namespace std;
+
+/*
+Author: Min Kim
+Program Description: This is a program that will create the prefix, infix, and postfix notations of an 
+inputted equation from the binary tree made from the equation. 
+Date: 3/19/23
+*/
 
 void enqueue(Node* &headQueue, Node* & tailQueue, Node* token);
 void dequeue(Node* &headQueue);
 void push(Node* &tailStack, int operation);
+Node* pop(Node* &tailStack);
+int peek(Node* tailStack);
 int prescedence(int op);
-Node* pop(Node* &tailQueue);
+void infix(Node* root);
+void prefix(Node* root);
+void postfix(Node* root);
 
 int main() {
   char input[80];
@@ -24,24 +38,20 @@ int main() {
     }
     else if (token->num == 41) {//right parenthesis
       while(tailStack->num != 40) {
-        cout << tailStack->num << endl;
         if (tailStack->next == NULL) {
         }
-        cout << tailStack->next->num << endl;
         enqueue(headQueue, tailQueue, pop(tailStack));
-        cout << tailStack->num << endl;
         if (tailStack == NULL) {
           break;
         }
       }
       pop(tailStack);//pop left parenthesis
     }
-
     else if (token->num == 40) {//left parenthesis: stack
       push(tailStack, int(input[i]));
     }
     else if (token->num == 43 || token->num == 42 || token->num == 45 || token->num == 47 || token->num == 94) {//operator
-      while ((tailStack != NULL) && (prescedence(tailStack->num) >= prescedence(token->num))) {
+      while ((tailStack != NULL) && (prescedence(peek(tailStack)) >= prescedence(peek(token)))) {
         enqueue(headQueue, tailQueue, pop(tailStack));
       }
       push(tailStack, token->num);
@@ -59,16 +69,86 @@ int main() {
     nQueue = nQueue->next;
   }
   cout << endl;
-  bool cont = true;
-  while (cont == true) {
-    cout << "Infix, prefix, or postfix notation (infix, prefix, postfix)?: ";
-    cin
-  }
-  //binary tree
 
+  //build binary tree
+  Node* root = NULL;
+  Node* token = headQueue;
+  vector<Node*>tree;
+  while(token != NULL) {
+    if (token->num > 47 && token->num < 58) {//number
+    tree.push_back(token);
+    }
+    else {//operator
+      token->right = tree.back();
+      tree.pop_back();
+      token->left = tree.back();
+      tree.pop_back();
+      tree.push_back(token);
+    }
+    token = token->next;
+  }
+  root = tree[0];
+
+  bool cont = true;
+  char notation[20];
+  while (cont == true) {//print from binary tree
+    cout << "Infix, prefix, postfix, or quit (infix, prefix, postfix, quit)?: ";
+    cin >> notation;
+    cin.ignore();
+    if (strcmp(notation, "infix") == 0) {
+      infix(root);
+      cout << endl;
+    }
+    else if (strcmp(notation, "prefix") == 0) {
+      prefix(root);
+      cout << endl;
+    }
+    else if (strcmp(notation, "postfix") == 0) {
+      postfix(root);
+      cout << endl;
+    }
+    else if (strcmp(notation, "quit") == 0) {
+      cont = false;
+    }
+    else {
+      cout << "Invalid input" << endl;
+    }
+  }
+}
+/*
+prefix, infix, postfix psuedocode from https://en.wikipedia.org/wiki/Binary_expression_tree
+*/
+void prefix(Node* root) {//print in prefix notation
+  if (root != NULL) {
+    cout << char(root->num);
+    prefix(root->left);
+    prefix(root->right);
+  }
 }
 
-int prescedence(int op) {
+void infix(Node* root) {//print in infix notation
+  if (root != NULL) {
+    if (root->num < 48) {//if its an operator
+      cout << "(";
+    }
+    infix(root->left);
+    cout << char(root->num);
+    infix(root->right);
+    if(root->num < 48) {
+      cout << ")";
+    }
+  }
+}
+
+void postfix(Node* root) {//print in postfix notation
+  if (root != NULL) {
+    postfix(root->left);
+    postfix(root->right);
+    cout << char(root->num);
+  }
+}
+
+int prescedence(int op) {//find prescedence of operator
   if (op == 94) {//^
     return 3;
   }
@@ -134,6 +214,6 @@ Node* pop(Node* &tailStack) {//remove tail of stack
   return move;
 }
 
-void peek() {
-
+int peek(Node* tailStack) {
+  return tailStack->num;
 }
